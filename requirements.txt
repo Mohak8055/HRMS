@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+pydantic-settings
+python-dotenv
+psycopg2-binary
+alembic
+pymysql
+mysqlclient
+jwt
+bcrypt
+libpass
+python-jose
+pydantic[email]
+black
+gunicorn

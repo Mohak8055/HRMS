@@ -1,0 +1,55 @@
+from fastapi import APIRouter, Depends, HTTPException
+
+from sqlalchemy.orm import Session
+from app.database import SessionLocal
+from app.schemas.user import UserCreate, UserResponse, UserUpdate
+from app.crud.user import (
+    create_user,
+    get_users,
+    get_user,
+    update_user,
+    toggle_user_activation,
+)
+from typing import List
+
+router = APIRouter()
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+@router.post("/create", response_model=UserResponse)
+def create(user: UserCreate, db: Session = Depends(get_db)):
+    return create_user(db, user)
+
+
+@router.get("/all-user")
+def list_users(db: Session = Depends(get_db)):
+    return get_users(db)
+
+
+@router.get("/{id}", response_model=UserResponse)
+def find_user(id: int, db: Session = Depends(get_db)):
+    user = get_user(db, id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return UserResponse(
+        **user.__dict__,
+        email=user.credential.email if user.credential else "",
+        roleId=user.roles[0].id if user.roles else None,
+    )
+
+
+@router.put("/update", response_model=UserUpdate)
+def update(user_data: UserUpdate, db: Session = Depends(get_db)):
+    return update_user(db, user_data)
+
+
+@router.delete("/{id}/{status}")
+def delete_user(id: int, status: bool, db: Session = Depends(get_db)):
+    return toggle_user_activation(id, status, db)
