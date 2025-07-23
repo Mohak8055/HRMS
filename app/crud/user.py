@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
 from app.models.user import User
@@ -70,9 +70,24 @@ def create_user(db: Session, user: UserCreate):
 
     # Extract sensitive or separate fields
     email = data.pop("email")
+    phone = data["phone"]
     plain_password = data.pop("password")
     role_id = data.pop("roleId")
+    # 🔍 Check if email already exists
+    email_exists = db.query(UserCredential).filter_by(email=email).first()
+    if email_exists:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A user with this email already exists",
+        )
 
+    # 🔍 Check if phone already exists
+    phone_exists = db.query(User).filter_by(phone=phone).first()
+    if phone_exists:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A user with this phone number already exists",
+        )
     # Create User
     db_user = User(**data)
     db.add(db_user)
@@ -117,17 +132,15 @@ def get_users(
         parts = name.strip().split()
         if len(parts) == 1:
             search = f"%{parts[0]}%"
-            base_query = base_query.filter(or_(
-                User.firstName.ilike(search),
-                User.lastName.ilike(search)
-            ))
+            base_query = base_query.filter(
+                or_(User.firstName.ilike(search), User.lastName.ilike(search))
+            )
         elif len(parts) >= 2:
             first = f"%{parts[0]}%"
             last = f"%{parts[1]}%"
-            base_query = base_query.filter(and_(
-                User.firstName.ilike(first),
-                User.lastName.ilike(last)
-            ))
+            base_query = base_query.filter(
+                and_(User.firstName.ilike(first), User.lastName.ilike(last))
+            )
     if email:
         base_query = base_query.filter(
             User.credential.has(UserCredential.email.ilike(f"%{email}%"))
