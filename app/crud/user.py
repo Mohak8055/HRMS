@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, and_
 from app.models.user import User
 from app.models.userRole import user_role
 from app.models.userCredential import UserCredential
@@ -112,6 +113,21 @@ def get_users(
     #     joinedload(User.roles),
     #     joinedload(User.department),
     # )
+    if name:
+        parts = name.strip().split()
+        if len(parts) == 1:
+            search = f"%{parts[0]}%"
+            base_query = base_query.filter(or_(
+                User.firstName.ilike(search),
+                User.lastName.ilike(search)
+            ))
+        elif len(parts) >= 2:
+            first = f"%{parts[0]}%"
+            last = f"%{parts[1]}%"
+            base_query = base_query.filter(and_(
+                User.firstName.ilike(first),
+                User.lastName.ilike(last)
+            ))
     if email:
         base_query = base_query.filter(
             User.credential.has(UserCredential.email.ilike(f"%{email}%"))
