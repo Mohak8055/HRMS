@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
-
+from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import Optional
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.schemas.user import UserCreate, UserResponse, UserUpdate
@@ -29,8 +29,28 @@ def create(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/all-user")
-def list_users(db: Session = Depends(get_db)):
-    return get_users(db)
+def list_users(
+    email: Optional[str] = Query(None),
+    phone: Optional[str] = Query(None),
+    name: Optional[str] = Query(None),
+    department: Optional[str] = Query(None),
+    role: Optional[str] = Query(None),
+    active: Optional[bool] = Query(None),
+    limit: int = Query(10, ge=1),
+    page: int = Query(1, ge=0),
+    db: Session = Depends(get_db),
+):
+    return get_users(
+        db,
+        email=email,
+        phone=phone,
+        name=name,
+        department=department,
+        role=role,
+        active=active,
+        limit=limit,
+        page=page,
+    )
 
 
 @router.get("/{id}", response_model=UserResponse)

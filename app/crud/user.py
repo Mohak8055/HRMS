@@ -5,10 +5,13 @@ from app.models.userRole import user_role
 from app.models.userCredential import UserCredential
 from app.schemas.user import UserCreate, UserUpdate
 from app.utils.auth import get_password_hash
-from sqlalchemy import insert, delete
+from sqlalchemy import insert
 from datetime import datetime
 from app.schemas.user import UserResponse, AllUserResponse
 from sqlalchemy.orm import joinedload
+from typing import Optional
+from app.models.department import Department
+from app.models.role import Role
 
 
 def create_user_old(db: Session, user: UserCreate):
@@ -91,16 +94,56 @@ def create_user(db: Session, user: UserCreate):
     return UserResponse(id=db_user.id, email=email, roleId=role_id, **data)
 
 
-def get_users(db: Session):
+def get_users(
+    db: Session,
+    email: Optional[str] = None,
+    phone: Optional[str] = None,
+    name: Optional[str] = None,
+    department: Optional[str] = None,
+    role: Optional[str] = None,
+    active: Optional[bool] = None,
+    limit: int = 10,
+    page: int = 1,
+):
+    offset = (page - 1) * limit
+    base_query = db.query(User)
+    # query = db.query(User).options(
+    #     joinedload(User.credential),
+    #     joinedload(User.roles),
+    #     joinedload(User.department),
+    # )
+    if email:
+        base_query = base_query.filter(
+            User.credential.has(UserCredential.email.ilike(f"%{email}%"))
+        )
+    if phone:
+        # query = query.filter(User.phone == phone)
+        base_query = base_query.filter(User.phone.ilike(f"%{phone}%"))
+    if department:
+        base_query = base_query.filter(
+            User.department.has(Department.name.ilike(f"%{department}%"))
+        )
+    if active is not None:
+        base_query = base_query.filter(User.active == active)
+    if role:
+        base_query = base_query.filter(User.roles.any(Role.name.ilike(f"%{role}%")))
+    # Total count (no offset/limit, no joinedload needed)
+    total = base_query.count()
+    page = (offset // limit) + 1 if limit > 0 else 1
+    # Fetch paginated data with joined relationships
     users = (
-        db.query(User)
-        .options(
+        base_query.options(
             joinedload(User.credential),
             joinedload(User.roles),
             joinedload(User.department),
         )
+        .offset(offset)
+        .limit(limit)
         .all()
     )
+
+    # users = query.offset(offset).limit(limit).all()
+    # users = query.all()
     result = []
     # return users
     for user in users:
@@ -143,6 +186,14 @@ def get_users(db: Session):
             department=department,
         )
         result.append(user_data)
+    return {
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "page": page,
+        "users": result,
+    }
+
     return result
 
 
@@ -202,7 +253,7 @@ def update_user(db: Session, user: UserUpdate):
         # id=db_user.id,
         email=db_user.credential.email if db_user.credential else None,
         # roleId=data.get("roleId"),
-        **{k: getattr(db_user, k) for k in data if hasattr(db_user, k)}
+        **{k: getattr(db_user, k) for k in data if hasattr(db_user, k)},
     )
 
 
