@@ -73,7 +73,7 @@ def create_role(db: Session, role: RoleCreate):
     db.commit()
     db.refresh(db_role)
     # ✅ Return Pydantic response model
-    return DeptResponse(id=db_role.id, **data)
+    return RoleResponse(id=db_role.id, **data)
 
 
 def get_roles(db: Session):
