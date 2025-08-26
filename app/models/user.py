@@ -12,6 +12,7 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 from app.models.userRole import user_role  # Import AFTER it is defined
 from app.models.role import Role
+from app.models.userprofile import ProfilePhoto
 
 
 class User(Base):
@@ -42,3 +43,5 @@ class User(Base):
 
     credential = relationship("UserCredential", back_populates="user", uselist=False)
     roles = relationship("Role", secondary=user_role, backref="users")
+    profile_photo = relationship("ProfilePhoto", back_populates="user", uselist=False)
+
