@@ -1,34 +1,24 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 from sqlalchemy.orm import Session
-from app.database import SessionLocal
-from app.schemas.user import UserCreate, UserResponse, UserUpdate
+from app.database import SessionLocal, get_db
+from app.schemas.user import UserCreate, UserResponse, UserUpdate, UserPasswordUpdate
 from app.crud.user import (
     create_user,
     get_users,
     get_user,
     update_user,
     toggle_user_activation,
+    update_user_password,
 )
-from typing import List
-
 from app.utils.auth import get_current_user
+from typing import List
 
 router = APIRouter()
 
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-@router.post("/create", response_model=UserResponse, dependencies=[Depends(get_current_user)])
+@router.post("/create", response_model=UserResponse)
 def create(user: UserCreate, db: Session = Depends(get_db)):
     return create_user(db, user)
-
 
 @router.get("/all-user", dependencies=[Depends(get_current_user)])
 def list_users(
@@ -54,7 +44,6 @@ def list_users(
         page=page,
     )
 
-
 @router.get("/{id}", response_model=UserResponse, dependencies=[Depends(get_current_user)])
 def find_user(id: int, db: Session = Depends(get_db)):
     user = get_user(db, id)
@@ -66,12 +55,14 @@ def find_user(id: int, db: Session = Depends(get_db)):
         roleId=user.roles[0].id if user.roles else None,
     )
 
-
-@router.put("/update", response_model=UserUpdate, dependencies=[Depends(get_current_user)])
+@router.put("/update", response_model=UserUpdate)
 def update(user_data: UserUpdate, db: Session = Depends(get_db)):
     return update_user(db, user_data)
 
+@router.patch("/reset-password")
+def reset_password(user_pass: UserPasswordUpdate, db: Session = Depends(get_db)):
+    return update_user_password(db, user_pass)
 
-@router.delete("/{id}/{status}", dependencies=[Depends(get_current_user)])
+@router.delete("/{id}/{status}")
 def delete_user(id: int, status: bool, db: Session = Depends(get_db)):
     return toggle_user_activation(id, status, db)

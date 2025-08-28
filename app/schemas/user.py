@@ -33,6 +33,7 @@ class UserUpdate(BaseModel):
     managerId: Optional[int] = None
     active: Optional[bool] = None
     updatedAt: Optional[datetime] = None
+    password: Optional[str] = None
 
 
 class UserInDBBase(UserBase):
@@ -57,7 +58,7 @@ class AllUserResponse(UserInDBBase):
     class Config:
         from_attributes = True
 
-# Add this new schema for nested responses
+
 class UserSimpleResponse(BaseModel):
     id: int
     firstName: str
@@ -65,3 +66,8 @@ class UserSimpleResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class UserPasswordUpdate(BaseModel):
+    id: int
+    old_password: str
+    new_password: str
