@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { padding: 20px; }
+        .header { background-color: #f2f2f2; padding: 10px; text-align: center; }
+        .content { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Leave Request Details</h2>
+        </div>
+        <div class="content">
+            <p>Dear Sir,</p>
+            <p>I am applying for a {{ leave_type }} leave.</p>
+            <ul>
+                <li><strong>From Date:</strong> {{ from_date }}</li>
+                <li><strong>To Date:</strong> {{ to_date }}</li>
+                <li><strong>Contact Details:</strong> {{ contact_details }}</li>
+                <li><strong>Reason:</strong> {{ reason }}</li>
+            </ul>
+            <p>Kindly approve my request.</p>
+            <p>Thank you,<br>{{ employee_name }}</p>
+        </div>
+    </div>
+</body>
+</html>

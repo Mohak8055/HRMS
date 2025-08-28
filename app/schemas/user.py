@@ -1,16 +1,3 @@
-# from pydantic import BaseModel
-
-# class UserCreate(BaseModel):
-#     email: str
-#     name: str
-
-# class UserResponse(UserCreate):
-#     id: int
-
-#     class Config:
-#         from_attributes = True
-
-
 from pydantic import BaseModel, EmailStr, constr, Field
 from typing import Optional, Annotated
 from datetime import date, datetime
@@ -22,22 +9,18 @@ class UserBase(BaseModel):
     phone: Annotated[str, Field(max_length=15)]
     firstName: str
     lastName: str
-    dob: date  # Accepts 'YYYY-MM-DD' format
-    doj: date  # Accepts 'YYYY-MM-DD' format
+    dob: date
+    doj: date
     departmentId: Optional[int] = None
     managerId: Optional[int] = None
-    active: Optional[bool] = True  # New field added
+    active: Optional[bool] = True
     createdAt: Optional[datetime] = None
     updatedAt: Optional[datetime] = None
 
 
 class UserCreate(UserBase):
-    password: str = constr(min_length=6)  # Add password validation
+    password: str = constr(min_length=6)
     roleId: int
-    pass  # You can add password or registration-specific fields here
-
-
-# For updating user details, excluding password
 
 
 class UserUpdate(BaseModel):
@@ -50,10 +33,8 @@ class UserUpdate(BaseModel):
     managerId: Optional[int] = None
     active: Optional[bool] = None
     updatedAt: Optional[datetime] = None
-    # roleId: Optional[int] = None
 
 
-# For reading from DB, with internal ID
 class UserInDBBase(UserBase):
     id: int
 
@@ -61,18 +42,26 @@ class UserInDBBase(UserBase):
         from_attributes = True
 
 
-# ✅ Final response schema — safe for public API output
 class UserResponse(UserInDBBase):
-    roleId: int  # Optional: include only if needed
+    roleId: int
 
     class Config:
         from_attributes = True
 
 
 class AllUserResponse(UserInDBBase):
-    roleId: int  # Optional: include only if needed
+    roleId: int
     role: Optional[dict]
     department: Optional[dict]
+
+    class Config:
+        from_attributes = True
+
+# Add this new schema for nested responses
+class UserSimpleResponse(BaseModel):
+    id: int
+    firstName: str
+    lastName: str
 
     class Config:
         from_attributes = True

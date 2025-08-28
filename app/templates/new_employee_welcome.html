@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { padding: 20px; }
+        .header { background-color: #f2f2f2; padding: 10px; text-align: center; }
+        .content { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Welcome to the Team!</h2>
+        </div>
+        <div class="content">
+            <p>Dear {{ employee_name }},</p>
+            <p>Welcome aboard! An account has been created for you.</p>
+            <p>Your temporary password is: <strong>{{ temporary_password }}</strong></p>
+            <p>Please log in to the employee portal and change your password at your earliest convenience.</p>
+            <p>Best regards,<br>HR Department</p>
+        </div>
+    </div>
+</body>
+</html>
