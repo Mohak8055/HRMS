@@ -8,6 +8,8 @@ from app.models.userprofile import ProfilePhoto
 from app.models.user import User
 from fastapi.responses import JSONResponse
 
+from app.utils.auth import get_current_user
+
 UPLOAD_DIR = "uploads/profile_photos"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -20,7 +22,7 @@ def generate_unique_filename(user_id: int, original_filename: str) -> str:
     unique_id = uuid.uuid4().hex[:8]  # short UUID
     return f"user_{user_id}_{timestamp}_{unique_id}{file_ext}"
 
-@router.post("/upload-profile-photo")
+@router.post("/upload-profile-photo", dependencies=[Depends(get_current_user)])
 async def upload_profile_photo(
     user_id: int = Form(...),
     file: UploadFile = File(...),
@@ -61,7 +63,7 @@ async def upload_profile_photo(
         "file_path": file_path
     })
 
-@router.get("/get-profile-photo/{user_id}")
+@router.get("/get-profile-photo/{user_id}", dependencies=[Depends(get_current_user)])
 def get_profile_photo(user_id: int, db: Session = Depends(get_db)):
     photo_record = db.query(ProfilePhoto).filter(ProfilePhoto.user_id == user_id).first()
     if not photo_record:
@@ -78,7 +80,7 @@ def get_profile_photo(user_id: int, db: Session = Depends(get_db)):
     }
 
 
-@router.put("/update-profile-photo/{user_id}")
+@router.put("/update-profile-photo/{user_id}", dependencies=[Depends(get_current_user)])
 async def update_profile_photo(
     user_id: int,
     file: UploadFile = File(...),
@@ -118,7 +120,7 @@ async def update_profile_photo(
         "file_url": file_url,
         "file_path": file_path
     })
-@router.delete("/remove-profile-photo/{user_id}")
+@router.delete("/remove-profile-photo/{user_id}", dependencies=[Depends(get_current_user)])
 def remove_profile_photo(user_id: int, db: Session = Depends(get_db)):
     photo_record = db.query(ProfilePhoto).filter(ProfilePhoto.user_id == user_id).first()
     if not photo_record:

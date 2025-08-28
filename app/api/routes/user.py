@@ -12,6 +12,8 @@ from app.crud.user import (
 )
 from typing import List
 
+from app.utils.auth import get_current_user
+
 router = APIRouter()
 
 
@@ -23,12 +25,12 @@ def get_db():
         db.close()
 
 
-@router.post("/create", response_model=UserResponse)
+@router.post("/create", response_model=UserResponse, dependencies=[Depends(get_current_user)])
 def create(user: UserCreate, db: Session = Depends(get_db)):
     return create_user(db, user)
 
 
-@router.get("/all-user")
+@router.get("/all-user", dependencies=[Depends(get_current_user)])
 def list_users(
     email: Optional[str] = Query(None),
     phone: Optional[str] = Query(None),
@@ -53,7 +55,7 @@ def list_users(
     )
 
 
-@router.get("/{id}", response_model=UserResponse)
+@router.get("/{id}", response_model=UserResponse, dependencies=[Depends(get_current_user)])
 def find_user(id: int, db: Session = Depends(get_db)):
     user = get_user(db, id)
     if not user:
@@ -65,11 +67,11 @@ def find_user(id: int, db: Session = Depends(get_db)):
     )
 
 
-@router.put("/update", response_model=UserUpdate)
+@router.put("/update", response_model=UserUpdate, dependencies=[Depends(get_current_user)])
 def update(user_data: UserUpdate, db: Session = Depends(get_db)):
     return update_user(db, user_data)
 
 
-@router.delete("/{id}/{status}")
+@router.delete("/{id}/{status}", dependencies=[Depends(get_current_user)])
 def delete_user(id: int, status: bool, db: Session = Depends(get_db)):
     return toggle_user_activation(id, status, db)

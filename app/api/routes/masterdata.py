@@ -17,6 +17,8 @@ from app.crud.masterdata import (
 )
 from typing import List
 
+from app.utils.auth import get_current_user
+
 router = APIRouter()
 
 
@@ -33,12 +35,12 @@ def create(dept: DeptCreate, db: Session = Depends(get_db)):
     return create_dept(db, dept)
 
 
-@router.get("/depts", response_model=List[DeptResponse])
+@router.get("/depts", response_model=List[DeptResponse], dependencies=[Depends(get_current_user)])
 def list_depts(db: Session = Depends(get_db)):
     return get_depts(db)
 
 
-@router.get("/dept/{id}", response_model=DeptResponse)
+@router.get("/dept/{id}", response_model=DeptResponse, dependencies=[Depends(get_current_user)])
 def dept(id: int, db: Session = Depends(get_db)):
     return get_dept(id, db)
 
@@ -58,12 +60,12 @@ def create(role: RoleCreate, db: Session = Depends(get_db)):
     return create_role(db, role)
 
 
-@router.get("/roles", response_model=List[RoleResponse])
+@router.get("/roles", response_model=List[RoleResponse], dependencies=[Depends(get_current_user)])
 def list_roles(db: Session = Depends(get_db)):
     return get_roles(db)
 
 
-@router.get("/role/{id}", response_model=RoleResponse)
+@router.get("/role/{id}", response_model=RoleResponse, dependencies=[Depends(get_current_user)])
 def role(id: int, db: Session = Depends(get_db)):
     return get_role(id, db)
 
