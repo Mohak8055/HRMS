@@ -11,6 +11,7 @@ from app.crud.user import (
     toggle_user_activation,
     update_user_password,
     bulk_create_users,
+    export_users_to_excel,
 )
 from app.utils.auth import allow_roles
 from typing import List
@@ -27,6 +28,10 @@ async def bulk_create(file: UploadFile = File(...), db: Session = Depends(get_db
 @router.post("/create", response_model=UserResponse, dependencies=[Depends(allow_roles(["Admin"]))])
 def create(user: UserCreate, db: Session = Depends(get_db)):
     return create_user(db, user)
+
+@router.get("/export-users", dependencies=[Depends(allow_roles(["Admin"]))])
+def export_users_route(db: Session = Depends(get_db)):
+    return export_users_to_excel(db)
 
 @router.get("/all-user", dependencies=[Depends(allow_roles(["Admin"]))])
 def list_users(

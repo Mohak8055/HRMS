@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status, UploadFile
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
 from app.models.user import User
@@ -256,3 +257,43 @@ def toggle_user_activation(user_id: int, activate: bool, db: Session):
     db.refresh(user)
 
     return {"Message": "User status updated successfully", "status": user.active}
+
+def export_users_to_excel(db: Session):
+    users = db.query(User).options(joinedload(User.roles), joinedload(User.department)).all()
+
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+    sheet.title = "Employees"
+
+    headers = [
+        "Employee ID",
+        "Employee Name",
+        "Email ID",
+        "Mobile Number",
+        "Department Name",
+        "Role",
+        "Status",
+    ]
+    sheet.append(headers)
+
+    for user in users:
+        row = [
+            user.id,
+            f"{user.firstName} {user.lastName}",
+            user.credential.email if user.credential else "",
+            user.phone,
+            user.department.name if user.department else "",
+            user.roles[0].name if user.roles else "",
+            "Active" if user.active else "Inactive",
+        ]
+        sheet.append(row)
+
+    excel_file = io.BytesIO()
+    workbook.save(excel_file)
+    excel_file.seek(0)
+
+    return StreamingResponse(
+        excel_file,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=employees.xlsx"},
+    )
