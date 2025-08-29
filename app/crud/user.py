@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, UploadFile
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
 from app.models.user import User
@@ -13,6 +13,42 @@ from sqlalchemy.orm import joinedload
 from typing import Optional
 from app.models.department import Department
 from app.models.role import Role
+import openpyxl
+import io
+
+async def bulk_create_users(db: Session, file: UploadFile):
+    contents = await file.read()
+    workbook = openpyxl.load_workbook(io.BytesIO(contents))
+    sheet = workbook.active
+
+    created_count = 0
+    errors = []
+
+    for row_idx, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+        # Skip empty rows
+        if not any(row):
+            continue
+        try:
+            # Convert phone number to string
+            phone_number = str(row[1]) if row[1] is not None else None
+            
+            user_data = UserCreate(
+                email=row[0],
+                phone=phone_number,
+                firstName=row[2],
+                lastName=row[3],
+                dob=row[4],
+                doj=row[5],
+                departmentId=row[6],
+                roleId=row[7],
+                password=row[8]
+            )
+            create_user(db, user_data)
+            created_count += 1
+        except Exception as e:
+            errors.append(f"Row {row_idx}: {e}")
+
+    return {"created_count": created_count, "errors": errors}
 
 
 def create_user(db: Session, user: UserCreate):

@@ -15,3 +15,5 @@ python-jose
 pydantic[email]
 black
 gunicorn
+openpyxl
+python-multipart

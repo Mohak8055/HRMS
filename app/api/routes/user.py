@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from typing import Optional
 from sqlalchemy.orm import Session
 from app.database import SessionLocal, get_db
@@ -10,11 +10,19 @@ from app.crud.user import (
     update_user,
     toggle_user_activation,
     update_user_password,
+    bulk_create_users,
 )
 from app.utils.auth import get_current_user
 from typing import List
 
 router = APIRouter()
+
+@router.post("/bulk-create", dependencies=[Depends(get_current_user)])
+async def bulk_create(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    if not file.filename.endswith('.xlsx'):
+        raise HTTPException(status_code=400, detail="Invalid file type. Please upload an Excel file.")
+    
+    return await bulk_create_users(db, file)
 
 @router.post("/create", response_model=UserResponse)
 def create(user: UserCreate, db: Session = Depends(get_db)):
