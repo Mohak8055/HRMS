@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, List
 
 # Configuration
 SECRET_KEY = "your-secret-key"
@@ -55,7 +55,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     except JWTError:
         raise credentials_exception
 
-def allow_roles(allowed_roles: list[str]):
+def allow_roles(allowed_roles: List[str]):
     def role_checker(current_user: dict = Depends(get_current_user)):
         user_roles = [role["name"] for role in current_user["roles"]]
         if not any(role in allowed_roles for role in user_roles):

@@ -12,23 +12,23 @@ from app.crud.user import (
     update_user_password,
     bulk_create_users,
 )
-from app.utils.auth import get_current_user
+from app.utils.auth import allow_roles
 from typing import List
 
 router = APIRouter()
 
-@router.post("/bulk-create", dependencies=[Depends(get_current_user)])
+@router.post("/bulk-create", dependencies=[Depends(allow_roles(["Admin"]))])
 async def bulk_create(file: UploadFile = File(...), db: Session = Depends(get_db)):
     if not file.filename.endswith('.xlsx'):
         raise HTTPException(status_code=400, detail="Invalid file type. Please upload an Excel file.")
     
     return await bulk_create_users(db, file)
 
-@router.post("/create", response_model=UserResponse)
+@router.post("/create", response_model=UserResponse, dependencies=[Depends(allow_roles(["Admin"]))])
 def create(user: UserCreate, db: Session = Depends(get_db)):
     return create_user(db, user)
 
-@router.get("/all-user", dependencies=[Depends(get_current_user)])
+@router.get("/all-user", dependencies=[Depends(allow_roles(["Admin"]))])
 def list_users(
     email: Optional[str] = Query(None),
     phone: Optional[str] = Query(None),
@@ -52,7 +52,7 @@ def list_users(
         page=page,
     )
 
-@router.get("/{id}", response_model=UserResponse, dependencies=[Depends(get_current_user)])
+@router.get("/{id}", response_model=UserResponse, dependencies=[Depends(allow_roles(["Admin", "Employee"]))])
 def find_user(id: int, db: Session = Depends(get_db)):
     user = get_user(db, id)
     if not user:
@@ -63,14 +63,14 @@ def find_user(id: int, db: Session = Depends(get_db)):
         roleId=user.roles[0].id if user.roles else None,
     )
 
-@router.put("/update", response_model=UserUpdate)
+@router.put("/update", response_model=UserUpdate, dependencies=[Depends(allow_roles(["Admin", "Employee"]))])
 def update(user_data: UserUpdate, db: Session = Depends(get_db)):
     return update_user(db, user_data)
 
-@router.patch("/reset-password")
+@router.patch("/reset-password", dependencies=[Depends(allow_roles(["Admin", "Employee"]))])
 def reset_password(user_pass: UserPasswordUpdate, db: Session = Depends(get_db)):
     return update_user_password(db, user_pass)
 
-@router.delete("/{id}/{status}")
+@router.delete("/{id}/{status}", dependencies=[Depends(allow_roles(["Admin"]))])
 def delete_user(id: int, status: bool, db: Session = Depends(get_db)):
     return toggle_user_activation(id, status, db)
