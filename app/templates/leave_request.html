@@ -2,28 +2,51 @@
 <html>
 <head>
     <style>
-        body { font-family: Arial, sans-serif; }
-        .container { padding: 20px; }
-        .header { background-color: #f2f2f2; padding: 10px; text-align: center; }
-        .content { margin-top: 20px; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; }
+        .header { background-color: #007bff; color: #ffffff; padding: 10px; text-align: center; font-size: 24px; }
+        .content { padding: 20px; }
+        .footer { text-align: center; color: #777; font-size: 12px; padding: 10px; }
+        .details-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .details-table td { padding: 8px; border: 1px solid #ddd; }
+        .details-table .label { font-weight: bold; width: 30%; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h2>Leave Request Details</h2>
+            Leave Request Details
         </div>
         <div class="content">
             <p>Dear Sir,</p>
-            <p>I am applying for a {{ leave_type }} leave.</p>
-            <ul>
-                <li><strong>From Date:</strong> {{ from_date }}</li>
-                <li><strong>To Date:</strong> {{ to_date }}</li>
-                <li><strong>Contact Details:</strong> {{ contact_details }}</li>
-                <li><strong>Reason:</strong> {{ reason }}</li>
-            </ul>
-            <p>Kindly approve my request.</p>
-            <p>Thank you,<br>{{ employee_name }}</p>
+            <p>A new leave request has been submitted by <strong>{{ employee_name }}</strong>.</p>
+            <table class="details-table">
+                <tr>
+                    <td class="label">Leave Type:</td>
+                    <td>{{ leave_type }}</td>
+                </tr>
+                <tr>
+                    <td class="label">From Date:</td>
+                    <td>{{ from_date }}</td>
+                </tr>
+                <tr>
+                    <td class="label">To Date:</td>
+                    <td>{{ to_date }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Contact Details:</td>
+                    <td>{{ contact_details }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Reason:</td>
+                    <td>{{ reason }}</td>
+                </tr>
+            </table>
+            <p>Kindly review and take the necessary action.</p>
+            <p>Thank you.</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2025 Your Company Name. All rights reserved.</p>
         </div>
     </div>
 </body>
