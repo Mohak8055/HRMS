@@ -1,5 +1,4 @@
 from fastapi import HTTPException, status, UploadFile
-from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
 from app.models.user import User
@@ -16,6 +15,7 @@ from app.models.department import Department
 from app.models.role import Role
 import openpyxl
 import io
+from fastapi.responses import StreamingResponse
 
 async def bulk_create_users(db: Session, file: UploadFile):
     contents = await file.read()
@@ -30,8 +30,8 @@ async def bulk_create_users(db: Session, file: UploadFile):
         if not any(row):
             continue
         try:
-            # Convert phone number to string
-            phone_number = str(row[1]) if row[1] is not None else None
+            # Convert phone number to string, handling potential float conversion from Excel
+            phone_number = str(int(row[1])) if row[1] is not None else None
             
             user_data = UserCreate(
                 email=row[0],
@@ -174,7 +174,7 @@ def get_users(
         user_data = AllUserResponse(
             id=user.id,
             email=email,
-            phone=user.phone,
+            phone=str(user.phone),
             firstName=user.firstName,
             lastName=user.lastName,
             dob=user.dob,
