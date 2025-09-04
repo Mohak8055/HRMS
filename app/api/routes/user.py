@@ -15,6 +15,8 @@ from app.crud.user import (
 )
 from app.utils.auth import allow_roles
 from typing import List
+from app.kafka_producer import send_message
+import base64
 
 router = APIRouter()
 
@@ -22,8 +24,18 @@ router = APIRouter()
 async def bulk_create(file: UploadFile = File(...), db: Session = Depends(get_db)):
     if not file.filename.endswith('.xlsx'):
         raise HTTPException(status_code=400, detail="Invalid file type. Please upload an Excel file.")
-    
-    return await bulk_create_users(db, file)
+
+    contents = await file.read()
+    encoded_contents = base64.b64encode(contents).decode('utf-8')
+
+    message = {
+        'filename': file.filename,
+        'file_content': encoded_contents
+    }
+
+    send_message('employee_bulk_creation', message)
+
+    return {"message": "File is being processed. You will be notified upon completion."}
 
 @router.post("/create", response_model=UserResponse, dependencies=[Depends(allow_roles(["Admin"]))])
 def create(user: UserCreate, db: Session = Depends(get_db)):
