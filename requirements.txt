@@ -18,3 +18,4 @@ gunicorn
 openpyxl
 python-multipart
 kafka-python
+websockets

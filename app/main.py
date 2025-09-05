@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.api.routes import user, auth, masterdata, userprofile, leave, leave_mail, employee_mail
+from app.api.routes import user, auth, masterdata, userprofile, leave, leave_mail, employee_mail, broadcast
 from app.database import Base, engine
 
 Base.metadata.create_all(bind=engine)
@@ -25,6 +25,7 @@ app.include_router(userprofile.router, prefix="/userprofile", tags=["User Profil
 app.include_router(leave_mail.router, prefix="/leave-mail", tags=["Leave Mail"])
 app.include_router(employee_mail.router, prefix="/employee-mail", tags=["Employee Mail"])
 app.include_router(leave.router, prefix="/leave", tags=["Leave"])
+app.include_router(broadcast.router, prefix="/broadcast", tags=["Broadcast"])
 
 
 app.mount(
