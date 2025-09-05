@@ -19,3 +19,4 @@ openpyxl
 python-multipart
 kafka-python
 websockets
+requests

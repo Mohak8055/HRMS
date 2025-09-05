@@ -1,7 +1,13 @@
 from kafka import KafkaConsumer
 import json
-import asyncio
-from app.websocket_manager import manager
+import requests
+
+def notify_fastapi(message):
+    try:
+        requests.post("http://localhost:8000/internal/broadcast", json=message)
+        print(f"Notified FastAPI of new message: {message}")
+    except requests.exceptions.RequestException as e:
+        print(f"Could not connect to FastAPI: {e}")
 
 def broadcast_consumer():
     consumer = KafkaConsumer(
@@ -14,7 +20,7 @@ def broadcast_consumer():
     )
 
     for message in consumer:
-        asyncio.run(manager.broadcast(json.dumps(message.value)))
+        notify_fastapi(message.value)
 
 if __name__ == "__main__":
     broadcast_consumer()
